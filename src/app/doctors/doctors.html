@@ -1,0 +1,273 @@
+<div class="doctors-page">
+  <div class="page-header">
+    <div>
+      <h1>Doctors</h1>
+      <p>Manage doctor profiles and availability</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <i class="fa-solid fa-user-doctor"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ doctors.length }}</h3>
+        <p>Total Doctors</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getAvailableCount() }}</h3>
+        <p>Available</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <i class="fa-solid fa-spinner"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getBusyCount() }}</h3>
+        <p>Busy</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red">
+        <i class="fa-solid fa-plane-departure"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getOnLeaveCount() }}</h3>
+        <p>On Leave</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Add -->
+  <div class="toolbar">
+    <div class="search-filter">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterDoctors()" placeholder="Search by name, specialization, status..." class="search-input">
+    </div>
+    <button class="btn btn-primary" (click)="openModal()"><i class="fa-solid fa-plus"
+        style="margin-right: 8px;"></i> Add Doctor</button>
+  </div>
+
+  <!-- Doctor Cards Grid -->
+  <div class="doctors-grid">
+    <div class="doctor-card" *ngFor="let doc of filteredDoctors">
+      <div class="card-header-section">
+        <span class="status-dot" [ngClass]="{
+          'available': doc.status === 'Available',
+          'busy': doc.status === 'Busy',
+          'on-leave': doc.status === 'On Leave'
+        }"></span>
+        <div class="card-actions-top">
+          <button class="action-btn-sm edit" title="Edit" (click)="editDoctor(doc)">
+            <i class="fa-regular fa-pen-to-square"></i>
+          </button>
+          <button class="action-btn-sm reject" title="Delete" (click)="deleteDoctor(doc.id)">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body-section">
+        <img [src]="doc.avatar" [alt]="doc.name" class="doctor-avatar">
+        <h3 class="doctor-name">{{ doc.name }}</h3>
+        <p class="doctor-specialization">{{ doc.specialization }}</p>
+
+        <div class="doctor-rating">
+          <i *ngFor="let star of getStars(doc.rating)"
+            class="fa-solid fa-star"
+            [class.filled]="star === 1"
+            [class.empty]="star === 0"></i>
+          <span class="rating-value">{{ doc.rating }}</span>
+        </div>
+
+        <div class="doctor-stats">
+          <div class="doc-stat">
+            <strong>{{ doc.experience }}</strong>
+            <span>Yrs Exp</span>
+          </div>
+          <div class="doc-stat-divider"></div>
+          <div class="doc-stat">
+            <strong>{{ doc.patientsHandled }}</strong>
+            <span>Patients</span>
+          </div>
+          <div class="doc-stat-divider"></div>
+          <div class="doc-stat">
+            <strong>{{ doc.consultationFee | currency:'INR':'symbol':'1.0-0' }}</strong>
+            <span>Fee</span>
+          </div>
+        </div>
+
+        <div class="availability-tags">
+          <span class="day-tag" *ngFor="let day of doc.availability">{{ day.substring(0, 3) }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer-section">
+        <button class="btn btn-outline btn-block" (click)="viewDetails(doc)">
+          <i class="fa-regular fa-eye" style="margin-right: 8px;"></i> View Profile
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Doctor Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen && isViewMode" (click)="closeModal()"></div>
+<div class="modal-container modal-lg" *ngIf="isModalOpen && isViewMode && viewDoctor">
+  <div class="modal-header">
+    <h3>Doctor Profile</h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="profile-top">
+      <img [src]="viewDoctor.avatar" [alt]="viewDoctor.name" class="profile-avatar">
+      <div class="profile-info">
+        <h2>{{ viewDoctor.name }}</h2>
+        <p class="profile-spec">{{ viewDoctor.specialization }}</p>
+        <p class="profile-qual">{{ viewDoctor.qualification }}</p>
+        <span class="status-badge" [ngClass]="{
+          'available': viewDoctor.status === 'Available',
+          'busy': viewDoctor.status === 'Busy',
+          'on-leave': viewDoctor.status === 'On Leave'
+        }">{{ viewDoctor.status }}</span>
+      </div>
+    </div>
+
+    <div class="profile-stats-row">
+      <div class="profile-stat">
+        <i class="fa-solid fa-briefcase"></i>
+        <div>
+          <strong>{{ viewDoctor.experience }} Years</strong>
+          <span>Experience</span>
+        </div>
+      </div>
+      <div class="profile-stat">
+        <i class="fa-solid fa-users"></i>
+        <div>
+          <strong>{{ viewDoctor.patientsHandled }}</strong>
+          <span>Patients Handled</span>
+        </div>
+      </div>
+      <div class="profile-stat">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+        <div>
+          <strong>{{ viewDoctor.consultationFee | currency:'INR':'symbol':'1.0-0' }}</strong>
+          <span>Consultation Fee</span>
+        </div>
+      </div>
+      <div class="profile-stat">
+        <i class="fa-solid fa-star"></i>
+        <div>
+          <strong>{{ viewDoctor.rating }} / 5</strong>
+          <span>Rating</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-grid">
+      <div class="view-item">
+        <label>Phone</label>
+        <p>{{ viewDoctor.phone }}</p>
+      </div>
+      <div class="view-item">
+        <label>Email</label>
+        <p>{{ viewDoctor.email }}</p>
+      </div>
+    </div>
+
+    <div class="view-section">
+      <label>Availability</label>
+      <div class="availability-tags-lg">
+        <span class="day-tag-lg" *ngFor="let day of viewDoctor.availability">{{ day }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- Add/Edit Doctor Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen && !isViewMode" (click)="closeModal()"></div>
+<div class="modal-container modal-lg" *ngIf="isModalOpen && !isViewMode">
+  <div class="modal-header">
+    <h3>{{ isEditing ? 'Edit Doctor' : 'Add New Doctor' }}</h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Full Name</label>
+        <input type="text" [(ngModel)]="newDoctor.name" class="form-control" placeholder="Dr. Full Name">
+      </div>
+      <div class="form-group half-width">
+        <label>Specialization</label>
+        <select [(ngModel)]="newDoctor.specialization" class="form-control">
+          <option value="">Select Specialization</option>
+          <option value="General Dentist">General Dentist</option>
+          <option value="Orthodontist">Orthodontist</option>
+          <option value="Oral Surgeon">Oral Surgeon</option>
+          <option value="Endodontist">Endodontist</option>
+          <option value="Pediatric Dentist">Pediatric Dentist</option>
+          <option value="Prosthodontist">Prosthodontist</option>
+          <option value="Periodontist">Periodontist</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Qualification</label>
+      <input type="text" [(ngModel)]="newDoctor.qualification" class="form-control" placeholder="e.g. BDS, MDS - Orthodontics">
+    </div>
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Experience (Years)</label>
+        <input type="number" [(ngModel)]="newDoctor.experience" class="form-control" placeholder="Years" min="0">
+      </div>
+      <div class="form-group half-width">
+        <label>Consultation Fee (INR)</label>
+        <input type="number" [(ngModel)]="newDoctor.consultationFee" class="form-control" placeholder="Fee" min="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Phone</label>
+        <input type="tel" [(ngModel)]="newDoctor.phone" class="form-control" placeholder="(555) 000-0000">
+      </div>
+      <div class="form-group half-width">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="newDoctor.email" class="form-control" placeholder="doctor@dentalcare.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select [(ngModel)]="newDoctor.status" class="form-control">
+        <option value="Available">Available</option>
+        <option value="Busy">Busy</option>
+        <option value="On Leave">On Leave</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Availability</label>
+      <div class="day-selector">
+        <button *ngFor="let day of availabilityDays"
+          class="day-btn"
+          [class.selected]="isDaySelected(day)"
+          (click)="toggleAvailability(day)">
+          {{ day.substring(0, 3) }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="btn btn-primary" (click)="saveDoctor()">{{ isEditing ? 'Update' : 'Add' }} Doctor</button>
+  </div>
+</div>

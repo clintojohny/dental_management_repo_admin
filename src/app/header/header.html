@@ -1,0 +1,46 @@
+<header class="topbar sticky-header">
+  <div class="topbar-left">
+    <button class="mobile-menu-btn" (click)="toggleSidebar()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+  <div class="header-actions">
+    <div class="branch-selector">
+      <i class="fa-solid fa-location-dot" style="margin-right: 8px; color: var(--text-light);"></i>
+      <select class="form-control branch-select">
+        <option>All Branches</option>
+        <option>Downtown Clinic</option>
+        <option>Uptown Clinic</option>
+      </select>
+    </div>
+    <div class="current-date">
+      {{ currentDate | date:'EEEE, MMMM d, y' }} <span class="current-time">{{ currentDate | date:'hh:mm a' }}</span>
+    </div>
+    <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      <i [class]="isDarkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
+    </button>
+    <div class="user-profile-wrapper">
+      <div class="user-profile" (click)="toggleProfileMenu()">
+        <img src="https://i.pravatar.cc/150?img=68" alt="Dr. Smith" class="header-avatar">
+        <span class="user-name">Dr. Smith</span>
+        <i class="fa-solid fa-chevron-down dropdown-arrow" [class.open]="profileMenuOpen"></i>
+      </div>
+      <div class="profile-dropdown" *ngIf="profileMenuOpen">
+        <div class="dropdown-header">
+          <img src="https://i.pravatar.cc/150?img=68" alt="Dr. Smith" class="dropdown-avatar">
+          <div class="dropdown-user-info">
+            <strong>Dr. Smith</strong>
+            <span>Orthodontist</span>
+          </div>
+        </div>
+        <ul>
+          <li><a href="#"><i class="fa-regular fa-user"></i> My Profile</a></li>
+          <li><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
+          <li><a href="#"><i class="fa-regular fa-bell"></i> Notifications</a></li>
+          <li class="divider"></li>
+          <li><a href="#" class="text-danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,18 @@
+<aside class="sidebar" [class.open]="sidebarOpen">
+  <div class="sidebar-header">
+    <i class="fa-solid fa-tooth"></i>
+    <h2>DentalCare</h2>
+    <button class="close-sidebar-btn" (click)="closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <ul class="nav-links">
+    <li><a routerLink="/dashboard" routerLinkActive="active"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+    <li><a routerLink="/appointments" routerLinkActive="active"><i class="fa-regular fa-calendar-check"></i> Appointments</a></li>
+    <li><a routerLink="/patients" routerLinkActive="active"><i class="fa-solid fa-users"></i> Patients</a></li>
+    <li><a routerLink="/doctors" routerLinkActive="active"><i class="fa-solid fa-user-doctor"></i> Doctors</a></li>
+    <li><a routerLink="/prescriptions" routerLinkActive="active"><i class="fa-solid fa-prescription"></i> Prescriptions</a></li>
+    <li><a routerLink="/billing" routerLinkActive="active"><i class="fa-solid fa-file-invoice-dollar"></i> Billing</a></li>
+    <li><a routerLink="/records" routerLinkActive="active"><i class="fa-solid fa-folder-open"></i> Records</a></li>
+    <li><a routerLink="/hrms" routerLinkActive="active"><i class="fa-solid fa-user-tie"></i> HRMS</a></li>
+    <li><a routerLink="/settings" routerLinkActive="active"><i class="fa-solid fa-gear"></i> Settings</a></li>
+  </ul>
+</aside>

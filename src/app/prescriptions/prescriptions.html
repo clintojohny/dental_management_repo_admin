@@ -1,0 +1,271 @@
+<div class="prescriptions-page">
+  <div class="page-header">
+    <div>
+      <h1>Prescriptions</h1>
+      <p>Manage patient prescriptions and medications</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <i class="fa-solid fa-prescription"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ prescriptions.length }}</h3>
+        <p>Total Prescriptions</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getActiveCount() }}</h3>
+        <p>Active</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <i class="fa-solid fa-clipboard-check"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getCompletedCount() }}</h3>
+        <p>Completed</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red">
+        <i class="fa-solid fa-ban"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getCancelledCount() }}</h3>
+        <p>Cancelled</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prescriptions Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>All Prescriptions</h2>
+      <div class="table-header-actions">
+        <div class="search-filter">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterPrescriptions()" placeholder="Search by patient, doctor, diagnosis..." class="search-input">
+        </div>
+        <button class="btn btn-primary" (click)="openModal()"><i class="fa-solid fa-plus"
+            style="margin-right: 8px;"></i> New Prescription</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Diagnosis</th>
+          <th>Medications</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rx of paginatedPrescriptions">
+          <td>
+            <div class="patient-name-cell">
+              <div class="patient-avatar">{{ rx.patientName.charAt(0) }}</div>
+              <div class="patient-info">
+                <strong>{{ rx.patientName }}</strong>
+                <span>RX: #{{ rx.id }}</span>
+              </div>
+            </div>
+          </td>
+          <td>{{ rx.doctor }}</td>
+          <td>{{ rx.date | date:'mediumDate' }}</td>
+          <td>{{ rx.diagnosis }}</td>
+          <td>
+            <div class="med-tags">
+              <span class="med-tag" *ngFor="let med of rx.medications">{{ med.name }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="{
+              'active': rx.status === 'Active',
+              'completed': rx.status === 'Completed',
+              'cancelled': rx.status === 'Cancelled'
+            }">{{ rx.status }}</span>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="action-btn view" title="View Details" (click)="viewDetails(rx)">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+              <button class="action-btn edit" title="Edit Prescription" (click)="editPrescription(rx)">
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+              <button class="action-btn accept" title="Mark Completed" (click)="updateStatus(rx.id, 'Completed')" *ngIf="rx.status === 'Active'">
+                <i class="fa-solid fa-check"></i>
+              </button>
+              <button class="action-btn reject" title="Cancel" (click)="updateStatus(rx.id, 'Cancelled')" *ngIf="rx.status === 'Active'">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button *ngFor="let page of getPages()" class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
+        {{ page }}
+      </button>
+      <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- View Prescription Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen && isViewMode" (click)="closeModal()"></div>
+<div class="modal-container modal-lg" *ngIf="isModalOpen && isViewMode && viewPrescription">
+  <div class="modal-header">
+    <h3>Prescription Details — #{{ viewPrescription.id }}</h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="view-grid">
+      <div class="view-item">
+        <label>Patient</label>
+        <p>{{ viewPrescription.patientName }}</p>
+      </div>
+      <div class="view-item">
+        <label>Doctor</label>
+        <p>{{ viewPrescription.doctor }}</p>
+      </div>
+      <div class="view-item">
+        <label>Date</label>
+        <p>{{ viewPrescription.date | date:'mediumDate' }}</p>
+      </div>
+      <div class="view-item">
+        <label>Status</label>
+        <span class="status-badge" [ngClass]="{
+          'active': viewPrescription.status === 'Active',
+          'completed': viewPrescription.status === 'Completed',
+          'cancelled': viewPrescription.status === 'Cancelled'
+        }">{{ viewPrescription.status }}</span>
+      </div>
+    </div>
+    <div class="view-section">
+      <label>Diagnosis</label>
+      <p>{{ viewPrescription.diagnosis }}</p>
+    </div>
+    <div class="view-section">
+      <label>Medications</label>
+      <div class="med-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Medication</th>
+              <th>Dosage</th>
+              <th>Frequency</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let med of viewPrescription.medications">
+              <td>{{ med.name }}</td>
+              <td>{{ med.dosage }}</td>
+              <td>{{ med.frequency }}</td>
+              <td>{{ med.duration }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="view-section" *ngIf="viewPrescription.notes">
+      <label>Notes</label>
+      <p class="notes-text">{{ viewPrescription.notes }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- Add/Edit Prescription Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen && !isViewMode" (click)="closeModal()"></div>
+<div class="modal-container modal-lg" *ngIf="isModalOpen && !isViewMode">
+  <div class="modal-header">
+    <h3>{{ isEditing ? 'Edit Prescription' : 'New Prescription' }}</h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Patient Name</label>
+        <input type="text" [(ngModel)]="newPrescription.patientName" class="form-control" placeholder="Enter patient name">
+      </div>
+      <div class="form-group half-width">
+        <label>Doctor</label>
+        <select [(ngModel)]="newPrescription.doctor" class="form-control">
+          <option value="">Select Doctor</option>
+          <option value="Dr. Smith (Orthodontist)">Dr. Smith (Orthodontist)</option>
+          <option value="Dr. Davis (General)">Dr. Davis (General)</option>
+          <option value="Dr. Evans (Surgeon)">Dr. Evans (Surgeon)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="newPrescription.date" class="form-control">
+      </div>
+      <div class="form-group half-width">
+        <label>Diagnosis</label>
+        <input type="text" [(ngModel)]="newPrescription.diagnosis" class="form-control" placeholder="e.g. Tooth Sensitivity">
+      </div>
+    </div>
+
+    <div class="medications-section">
+      <div class="medications-header">
+        <label>Medications</label>
+        <button class="btn btn-sm btn-outline" (click)="addMedication()"><i class="fa-solid fa-plus" style="margin-right: 6px;"></i> Add</button>
+      </div>
+      <div class="medication-row" *ngFor="let med of newPrescription.medications; let i = index">
+        <div class="form-row">
+          <div class="form-group quarter-width">
+            <input type="text" [(ngModel)]="med.name" class="form-control" placeholder="Medication name">
+          </div>
+          <div class="form-group quarter-width">
+            <input type="text" [(ngModel)]="med.dosage" class="form-control" placeholder="Dosage">
+          </div>
+          <div class="form-group quarter-width">
+            <input type="text" [(ngModel)]="med.frequency" class="form-control" placeholder="Frequency">
+          </div>
+          <div class="form-group quarter-width">
+            <input type="text" [(ngModel)]="med.duration" class="form-control" placeholder="Duration">
+          </div>
+          <button class="btn-remove" (click)="removeMedication(i)" *ngIf="newPrescription.medications!.length > 1">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea [(ngModel)]="newPrescription.notes" class="form-control textarea" placeholder="Additional notes..."></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="btn btn-primary" (click)="savePrescription()">{{ isEditing ? 'Update' : 'Save' }} Prescription</button>
+  </div>
+</div>

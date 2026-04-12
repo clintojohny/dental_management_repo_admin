@@ -1,0 +1,382 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Settings</h1>
+      <p>Manage your account and clinic preferences</p>
+    </div>
+  </div>
+
+  <!-- Saved Message -->
+  <div class="saved-toast" *ngIf="showSavedMessage">
+    <i class="fa-solid fa-circle-check"></i> Settings saved successfully!
+  </div>
+
+  <div class="settings-layout">
+    <!-- Tabs Sidebar -->
+    <div class="settings-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="setTab('profile')">
+        <i class="fa-regular fa-user"></i> Profile
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'clinic'" (click)="setTab('clinic')">
+        <i class="fa-solid fa-hospital"></i> Clinic Info
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications')">
+        <i class="fa-regular fa-bell"></i> Notifications
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'security'" (click)="setTab('security')">
+        <i class="fa-solid fa-shield-halved"></i> Security
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'appearance'" (click)="setTab('appearance')">
+        <i class="fa-solid fa-palette"></i> Appearance
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="settings-content">
+
+      <!-- Profile Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'profile'">
+        <div class="panel-header">
+          <h2>Profile Settings</h2>
+          <p>Update your personal information</p>
+        </div>
+        <div class="profile-avatar-section">
+          <img [src]="profile.avatar" alt="Avatar" class="settings-avatar">
+          <div>
+            <h3>{{ profile.name }}</h3>
+            <p>{{ profile.specialization }}</p>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Full Name</label>
+            <input type="text" [(ngModel)]="profile.name" class="form-control">
+          </div>
+          <div class="form-group half-width">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="profile.email" class="form-control">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="profile.phone" class="form-control">
+          </div>
+          <div class="form-group half-width">
+            <label>Specialization</label>
+            <input type="text" [(ngModel)]="profile.specialization" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Qualification</label>
+          <input type="text" [(ngModel)]="profile.qualification" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea [(ngModel)]="profile.bio" class="form-control textarea" rows="3"></textarea>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-primary" (click)="saveSettings()"><i class="fa-solid fa-check" style="margin-right: 8px;"></i> Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Clinic Info Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'clinic'">
+        <div class="panel-header">
+          <h2>Clinic Information</h2>
+          <p>Manage your clinic details and working hours</p>
+        </div>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Clinic Name</label>
+            <input type="text" [(ngModel)]="clinic.name" class="form-control">
+          </div>
+          <div class="form-group half-width">
+            <label>Website</label>
+            <input type="text" [(ngModel)]="clinic.website" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" [(ngModel)]="clinic.address" class="form-control">
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>City</label>
+            <input type="text" [(ngModel)]="clinic.city" class="form-control">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>State</label>
+            <input type="text" [(ngModel)]="clinic.state" class="form-control">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>ZIP Code</label>
+            <input type="text" [(ngModel)]="clinic.zip" class="form-control">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="clinic.phone" class="form-control">
+          </div>
+          <div class="form-group half-width">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="clinic.email" class="form-control">
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3 class="sub-heading">Working Hours</h3>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Opening Time</label>
+            <input type="time" [(ngModel)]="clinic.openTime" class="form-control">
+          </div>
+          <div class="form-group half-width">
+            <label>Closing Time</label>
+            <input type="time" [(ngModel)]="clinic.closeTime" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Working Days</label>
+          <div class="day-selector">
+            <button *ngFor="let day of allDays"
+              class="day-btn"
+              [class.selected]="isWorkingDay(day)"
+              (click)="toggleWorkingDay(day)">
+              {{ day.substring(0, 3) }}
+            </button>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-primary" (click)="saveSettings()"><i class="fa-solid fa-check" style="margin-right: 8px;"></i> Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'notifications'">
+        <div class="panel-header">
+          <h2>Notification Preferences</h2>
+          <p>Choose how you want to receive notifications</p>
+        </div>
+
+        <h3 class="sub-heading"><i class="fa-regular fa-envelope" style="margin-right: 8px;"></i> Email Notifications</h3>
+        <div class="toggle-list">
+          <div class="toggle-item">
+            <div>
+              <strong>Appointment Reminders</strong>
+              <p>Receive email reminders for upcoming appointments</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.emailAppointment">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>Cancellation Alerts</strong>
+              <p>Get notified when an appointment is cancelled</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.emailCancellation">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>New Patient Registration</strong>
+              <p>Email when a new patient registers</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.emailNewPatient">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>Billing & Payments</strong>
+              <p>Receive payment confirmation emails</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.emailBilling">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3 class="sub-heading"><i class="fa-solid fa-comment-sms" style="margin-right: 8px;"></i> SMS Notifications</h3>
+        <div class="toggle-list">
+          <div class="toggle-item">
+            <div>
+              <strong>Appointment Reminders</strong>
+              <p>Send SMS reminders to patients</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.smsReminder">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>Booking Confirmation</strong>
+              <p>SMS confirmation after booking</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.smsConfirmation">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>Cancellation Notice</strong>
+              <p>Notify patients via SMS on cancellation</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="notifications.smsCancellation">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn btn-primary" (click)="saveSettings()"><i class="fa-solid fa-check" style="margin-right: 8px;"></i> Save Preferences</button>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'security'">
+        <div class="panel-header">
+          <h2>Security Settings</h2>
+          <p>Manage your password and security preferences</p>
+        </div>
+
+        <h3 class="sub-heading">Change Password</h3>
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" [(ngModel)]="security.currentPassword" class="form-control" placeholder="Enter current password">
+        </div>
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>New Password</label>
+            <input type="password" [(ngModel)]="security.newPassword" class="form-control" placeholder="Enter new password">
+          </div>
+          <div class="form-group half-width">
+            <label>Confirm Password</label>
+            <input type="password" [(ngModel)]="security.confirmPassword" class="form-control" placeholder="Confirm new password">
+          </div>
+        </div>
+        <div class="panel-actions" style="margin-bottom: 1.5rem;">
+          <button class="btn btn-primary" (click)="changePassword()"><i class="fa-solid fa-key" style="margin-right: 8px;"></i> Update Password</button>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3 class="sub-heading">Security Options</h3>
+        <div class="toggle-list">
+          <div class="toggle-item">
+            <div>
+              <strong>Two-Factor Authentication</strong>
+              <p>Add extra security with 2FA verification</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="security.twoFactorEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>Login Alerts</strong>
+              <p>Get notified of new logins to your account</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="security.loginAlerts">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" style="max-width: 300px; margin-top: 1rem;">
+          <label>Session Timeout (minutes)</label>
+          <input type="number" [(ngModel)]="security.sessionTimeout" class="form-control" min="5" max="120">
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-primary" (click)="saveSettings()"><i class="fa-solid fa-check" style="margin-right: 8px;"></i> Save Security Settings</button>
+        </div>
+      </div>
+
+      <!-- Appearance Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'appearance'">
+        <div class="panel-header">
+          <h2>Appearance</h2>
+          <p>Customize the look and feel</p>
+        </div>
+
+        <h3 class="sub-heading">Theme</h3>
+        <div class="theme-selector">
+          <button class="theme-option" [class.active]="appearance.theme === 'light'" (click)="changeTheme('light')">
+            <div class="theme-preview light-preview">
+              <div class="preview-sidebar"></div>
+              <div class="preview-content">
+                <div class="preview-bar"></div>
+                <div class="preview-body"></div>
+              </div>
+            </div>
+            <span>Light</span>
+          </button>
+          <button class="theme-option" [class.active]="appearance.theme === 'dark'" (click)="changeTheme('dark')">
+            <div class="theme-preview dark-preview">
+              <div class="preview-sidebar"></div>
+              <div class="preview-content">
+                <div class="preview-bar"></div>
+                <div class="preview-body"></div>
+              </div>
+            </div>
+            <span>Dark</span>
+          </button>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3 class="sub-heading">Preferences</h3>
+        <div class="toggle-list">
+          <div class="toggle-item">
+            <div>
+              <strong>Compact Mode</strong>
+              <p>Reduce spacing for a denser layout</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="appearance.compactMode">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div>
+              <strong>Animations</strong>
+              <p>Enable smooth transitions and hover effects</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="appearance.animationsEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" style="max-width: 250px; margin-top: 1rem;">
+          <label>Font Size</label>
+          <select [(ngModel)]="appearance.fontSize" class="form-control">
+            <option value="small">Small</option>
+            <option value="medium">Medium (Default)</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn btn-primary" (click)="saveSettings()"><i class="fa-solid fa-check" style="margin-right: 8px;"></i> Save Appearance</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<!-- Auth Pages (Login/Signup) — Full Page -->
+<div *ngIf="isAuthPage">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- Admin Layout -->
+<div class="admin-layout" *ngIf="!isAuthPage">
+  <app-sidebar [sidebarOpen]="sidebarOpen" (sidebarToggle)="toggleSidebar()"></app-sidebar>
+
+  <main class="main-content">
+    <div class="mobile-overlay" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
+    <app-header (sidebarToggle)="toggleSidebar()"></app-header>
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

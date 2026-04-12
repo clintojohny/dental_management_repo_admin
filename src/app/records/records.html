@@ -1,0 +1,269 @@
+<div class="records-page">
+  <div class="page-header">
+    <div>
+      <h1>Medical Records</h1>
+      <p>View and manage patient dental records</p>
+    </div>
+  </div>
+
+  <!-- Type Filter Cards -->
+  <div class="type-filters">
+    <button class="type-card" [class.active]="selectedType === ''" (click)="selectedType = ''; filterRecords()">
+      <i class="fa-solid fa-folder-open"></i>
+      <span class="type-count">{{ records.length }}</span>
+      <span class="type-label">All Records</span>
+    </button>
+    <button class="type-card" *ngFor="let type of recordTypes"
+      [class.active]="selectedType === type"
+      (click)="selectedType = type; filterRecords()">
+      <i [class]="getTypeIcon(type)"></i>
+      <span class="type-count">{{ getTypeCount(type) }}</span>
+      <span class="type-label">{{ type }}</span>
+    </button>
+  </div>
+
+  <!-- Records Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>{{ selectedType || 'All' }} Records</h2>
+      <div class="table-header-actions">
+        <div class="search-filter">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterRecords()" placeholder="Search records..." class="search-input">
+        </div>
+        <button class="btn btn-primary" (click)="openModal()"><i class="fa-solid fa-plus"
+            style="margin-right: 8px;"></i> New Record</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Record</th>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Files</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rec of paginatedRecords">
+          <td>
+            <div class="record-title-cell">
+              <div class="record-icon">
+                <i [class]="getTypeIcon(rec.type)"></i>
+              </div>
+              <div class="patient-info">
+                <strong>{{ rec.title }}</strong>
+                <span>#{{ rec.id }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="patient-name-cell">
+              <div class="patient-avatar">{{ rec.patientName.charAt(0) }}</div>
+              <span>{{ rec.patientName }}</span>
+            </div>
+          </td>
+          <td>{{ rec.doctor }}</td>
+          <td>{{ rec.date | date:'mediumDate' }}</td>
+          <td><span class="type-badge" [attr.data-type]="rec.type">{{ rec.type }}</span></td>
+          <td>
+            <span class="file-count" *ngIf="rec.files.length">
+              <i class="fa-solid fa-paperclip"></i> {{ rec.files.length }}
+            </span>
+            <span class="no-files" *ngIf="!rec.files.length">—</span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="{
+              'completed': rec.status === 'Completed',
+              'in-progress': rec.status === 'In Progress',
+              'pending-review': rec.status === 'Pending Review'
+            }">{{ rec.status }}</span>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="action-btn view" title="View Record" (click)="viewDetails(rec)">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+              <button class="action-btn edit" title="Edit Record" (click)="editRecord(rec)">
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+              <button class="action-btn reject" title="Delete Record" (click)="deleteRecord(rec.id)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage <= 1">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button *ngFor="let page of getPages()" class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
+        {{ page }}
+      </button>
+      <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      <span class="page-info">Showing {{ paginatedRecords.length }} of {{ filteredRecords.length }} records — Page {{ currentPage }} of {{ totalPages }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- View Record Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen && isViewMode" (click)="closeModal()"></div>
+<div class="modal-container modal-lg" *ngIf="isModalOpen && isViewMode && viewRecord">
+  <div class="modal-header">
+    <h3>
+      <i [class]="getTypeIcon(viewRecord.type)" style="margin-right: 8px; color: var(--primary);"></i>
+      {{ viewRecord.title }}
+    </h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="view-grid">
+      <div class="view-item">
+        <label>Patient</label>
+        <p>{{ viewRecord.patientName }} <span class="id-tag">#{{ viewRecord.patientId }}</span></p>
+      </div>
+      <div class="view-item">
+        <label>Doctor</label>
+        <p>{{ viewRecord.doctor }}</p>
+      </div>
+      <div class="view-item">
+        <label>Date</label>
+        <p>{{ viewRecord.date | date:'fullDate' }}</p>
+      </div>
+      <div class="view-item">
+        <label>Status</label>
+        <span class="status-badge" [ngClass]="{
+          'completed': viewRecord.status === 'Completed',
+          'in-progress': viewRecord.status === 'In Progress',
+          'pending-review': viewRecord.status === 'Pending Review'
+        }">{{ viewRecord.status }}</span>
+      </div>
+    </div>
+
+    <div class="view-section" *ngIf="viewRecord.description">
+      <label>Description</label>
+      <p class="detail-text">{{ viewRecord.description }}</p>
+    </div>
+
+    <div class="view-section" *ngIf="viewRecord.findings">
+      <label>Findings</label>
+      <p class="detail-text highlight">{{ viewRecord.findings }}</p>
+    </div>
+
+    <div class="view-section" *ngIf="viewRecord.treatmentDone">
+      <label>Treatment Done</label>
+      <p class="detail-text">{{ viewRecord.treatmentDone }}</p>
+    </div>
+
+    <div class="view-section" *ngIf="viewRecord.files.length">
+      <label>Attached Files</label>
+      <div class="files-list">
+        <div class="file-item" *ngFor="let file of viewRecord.files">
+          <div class="file-icon">
+            <i [class]="getFileIcon(file.type)"></i>
+          </div>
+          <div class="file-info">
+            <strong>{{ file.name }}</strong>
+            <span>{{ file.type }} — {{ file.date | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-section" *ngIf="viewRecord.notes">
+      <label>Notes</label>
+      <p class="detail-text notes">{{ viewRecord.notes }}</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- Add/Edit Record Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen && !isViewMode" (click)="closeModal()"></div>
+<div class="modal-container modal-lg" *ngIf="isModalOpen && !isViewMode">
+  <div class="modal-header">
+    <h3>{{ isEditing ? 'Edit Record' : 'New Medical Record' }}</h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Patient Name</label>
+        <input type="text" [(ngModel)]="newRecord.patientName" class="form-control" placeholder="Patient name">
+      </div>
+      <div class="form-group half-width">
+        <label>Patient ID</label>
+        <input type="number" [(ngModel)]="newRecord.patientId" class="form-control" placeholder="Patient ID">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Doctor</label>
+        <select [(ngModel)]="newRecord.doctor" class="form-control">
+          <option value="">Select Doctor</option>
+          <option value="Dr. Robert Smith">Dr. Robert Smith</option>
+          <option value="Dr. Sarah Davis">Dr. Sarah Davis</option>
+          <option value="Dr. Michael Evans">Dr. Michael Evans</option>
+          <option value="Dr. Emily Chen">Dr. Emily Chen</option>
+          <option value="Dr. James Wilson">Dr. James Wilson</option>
+        </select>
+      </div>
+      <div class="form-group half-width">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="newRecord.date" class="form-control">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Record Type</label>
+        <select [(ngModel)]="newRecord.type" class="form-control">
+          <option value="">Select Type</option>
+          <option *ngFor="let type of recordTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="form-group half-width">
+        <label>Status</label>
+        <select [(ngModel)]="newRecord.status" class="form-control">
+          <option value="Completed">Completed</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Pending Review">Pending Review</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" [(ngModel)]="newRecord.title" class="form-control" placeholder="e.g. Braces Adjustment - Session 4">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="newRecord.description" class="form-control textarea" placeholder="Describe the visit or procedure..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Findings</label>
+      <textarea [(ngModel)]="newRecord.findings" class="form-control textarea" placeholder="Clinical findings..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Treatment Done</label>
+      <textarea [(ngModel)]="newRecord.treatmentDone" class="form-control textarea" placeholder="Treatment performed..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea [(ngModel)]="newRecord.notes" class="form-control textarea" placeholder="Additional notes, follow-up instructions..."></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="btn btn-primary" (click)="saveRecord()">{{ isEditing ? 'Update' : 'Save' }} Record</button>
+  </div>
+</div>

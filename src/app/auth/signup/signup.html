@@ -1,0 +1,139 @@
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <i class="fa-solid fa-tooth"></i>
+      <h1>DentalCare</h1>
+      <p>Complete Dental Practice Management</p>
+    </div>
+    <div class="auth-illustration">
+      <div class="feature-list">
+        <div class="feature-item">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Secure & HIPAA Compliant</span>
+        </div>
+        <div class="feature-item">
+          <i class="fa-solid fa-cloud"></i>
+          <span>Cloud-Based Access Anywhere</span>
+        </div>
+        <div class="feature-item">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analytics & Reporting</span>
+        </div>
+        <div class="feature-item">
+          <i class="fa-solid fa-headset"></i>
+          <span>24/7 Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-form-container">
+      <div class="auth-form-header">
+        <h2>Create Account</h2>
+        <p>Start managing your dental practice today</p>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSignup()">
+        <div class="form-group">
+          <label>Full Name</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-user"></i>
+            <input type="text" [(ngModel)]="fullName" name="fullName" placeholder="Dr. Full Name" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" [(ngModel)]="email" name="email" placeholder="doctor@dentalcare.com" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Phone</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-phone"></i>
+              <input type="tel" [(ngModel)]="phone" name="phone" placeholder="(555) 000-0000" class="form-input">
+            </div>
+          </div>
+          <div class="form-group half-width">
+            <label>Specialization</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-stethoscope"></i>
+              <select [(ngModel)]="specialization" name="specialization" class="form-input form-select">
+                <option value="">Select</option>
+                <option value="General Dentist">General Dentist</option>
+                <option value="Orthodontist">Orthodontist</option>
+                <option value="Oral Surgeon">Oral Surgeon</option>
+                <option value="Endodontist">Endodontist</option>
+                <option value="Pediatric Dentist">Pediatric Dentist</option>
+                <option value="Prosthodontist">Prosthodontist</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label>Password</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock"></i>
+              <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Min 8 characters" class="form-input">
+              <button type="button" class="toggle-password" (click)="togglePassword()">
+                <i [class]="showPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group half-width">
+            <label>Confirm Password</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock"></i>
+              <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Re-enter password" class="form-input">
+              <button type="button" class="toggle-password" (click)="toggleConfirmPassword()">
+                <i [class]="showConfirmPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="agreeTerms" name="agreeTerms">
+            <span>I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-signup">
+          <i class="fa-solid fa-user-plus" style="margin-right: 8px;"></i> Create Account
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <span>or sign up with</span>
+      </div>
+
+      <div class="social-login">
+        <button class="social-btn">
+          <i class="fa-brands fa-google"></i>
+        </button>
+        <button class="social-btn">
+          <i class="fa-brands fa-microsoft"></i>
+        </button>
+        <button class="social-btn">
+          <i class="fa-brands fa-apple"></i>
+        </button>
+      </div>
+
+      <p class="auth-footer">
+        Already have an account? <a routerLink="/login">Sign In</a>
+      </p>
+    </div>
+  </div>
+</div>

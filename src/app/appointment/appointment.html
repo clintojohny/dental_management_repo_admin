@@ -1,0 +1,128 @@
+<div class="appointment-page">
+  <div class="page-header">
+    <h1>Appointments</h1>
+    <p>Manage all patient appointments</p>
+  </div>
+
+  <!-- Appointments Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>All Appointments</h2>
+      <div class="table-header-actions">
+        <div class="search-filter">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterAppointments()" placeholder="Search by patient, doctor, treatment..." class="search-input">
+        </div>
+        <button class="btn btn-primary" (click)="openModal()"><i class="fa-solid fa-plus"
+            style="margin-right: 8px;"></i> New Appointment</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Date & Time</th>
+          <th>Treatment</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let apt of paginatedAppointments">
+          <td>
+            <div class="patient-info">
+              <strong>{{ apt.patientName }}</strong>
+              <span>ID: #{{ apt.id }}</span>
+            </div>
+          </td>
+          <td>{{ apt.doctor }}</td>
+          <td>
+            <div class="patient-info">
+              <strong>{{ apt.date | date:'mediumDate' }}</strong>
+              <span>{{ apt.time }}</span>
+            </div>
+          </td>
+          <td>{{ apt.treatment }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="{
+              'confirmed': apt.status === 'Confirmed',
+              'pending': apt.status === 'Pending',
+              'cancelled': apt.status === 'Cancelled'
+            }">{{ apt.status }}</span>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="action-btn accept" title="Confirm Appointment"
+                (click)="updateStatus(apt.id, 'Confirmed')">
+                <i class="fa-solid fa-check"></i>
+              </button>
+              <button class="action-btn reject" title="Cancel Appointment"
+                (click)="updateStatus(apt.id, 'Cancelled')">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <button class="action-btn edit" title="Edit Properties" (click)="editAppointment(apt)">
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button *ngFor="let page of getPages()" class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
+        {{ page }}
+      </button>
+      <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- New Appointment Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()"></div>
+<div class="modal-container" *ngIf="isModalOpen">
+  <div class="modal-header">
+    <h3>{{ isEditing ? 'Edit Appointment' : 'New Appointment' }}</h3>
+    <button class="close-btn" (click)="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label>Patient Name</label>
+      <input type="text" [(ngModel)]="newAppointment.patientName" class="form-control" placeholder="Enter patient name">
+    </div>
+    <div class="form-group">
+      <label>Doctor</label>
+      <select [(ngModel)]="newAppointment.doctor" class="form-control">
+        <option value="">Select Doctor</option>
+        <option value="Dr. Smith (Orthodontist)">Dr. Smith (Orthodontist)</option>
+        <option value="Dr. Davis (General)">Dr. Davis (General)</option>
+        <option value="Dr. Evans (Surgeon)">Dr. Evans (Surgeon)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group half-width">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="newAppointment.date" class="form-control">
+      </div>
+      <div class="form-group half-width">
+        <label>Time</label>
+        <input type="time" [(ngModel)]="newAppointment.time" class="form-control">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Treatment</label>
+      <input type="text" [(ngModel)]="newAppointment.treatment" class="form-control" placeholder="e.g. Teeth Cleaning">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="btn btn-primary" (click)="saveAppointment()">Save Appointment</button>
+  </div>
+</div>
